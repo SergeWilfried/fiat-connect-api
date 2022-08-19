@@ -24,7 +24,11 @@ async function validateNonce(_nonce: string, _redisClient: any) {
     if (nonceInUse) {
       throw new InvalidSiweParamsError(FiatConnectError.NonceInUse)
     }
-  } catch (error) {
+  } catch (error: any) {
+    console.log(error)
+    if (error.message === FiatConnectError.NonceInUse) {
+      throw new InvalidSiweParamsError(FiatConnectError.NonceInUse)
+    }
     throw new InvalidSiweParamsError(FiatConnectError.InvalidParameters)
   }
 }

@@ -27,36 +27,62 @@ async function main() {
     statement: 'Sign in with Ethereum',
     uri: `https://${DOMAIN}`,
     version: '1',
-    chainId: 42220,
-    nonce: '12948888885490678',
+    chainId: 44787,
+    nonce: '123839086978',
     expirationTime: expirationDate.toISOString(),
   })
   const message = siweMessage.prepareMessage()
   const signature = await wallet.signMessage(message)
 
-  console.log('message', message)
-  console.log('signature', signature)
+  console.log(JSON.stringify({ message, signature }))
 
-  // const authResponse = await fetch('http://localhost:8080/auth/login', {
-  //   method: 'POST',
-  //   body: JSON.stringify({ message, signature }),
-  //   headers: { 'Content-Type': 'application/json' },
-  // })
+  const authResponse = await fetch('http://localhost:8080/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ message, signature }),
+    headers: { 'Content-Type': 'application/json' },
+  })
 
-  // if (!authResponse.ok) {
-  //   console.log('Auth request failed:', await authResponse.text())
-  //   return
-  // }
+  if (!authResponse.ok) {
+    console.log('Auth request failed:', await authResponse.text())
+    return
+  }
 
 
   // set-cookie will be of the form:
   // api-starter=<cookie-val>; Path=/; Expires=Fri, 22 Apr 2022 10:36:40 GMT; HttpOnly; SameSite=Strict
-  // const authCookie = authResponse.headers.raw()['set-cookie'][0]
+  const authCookie = authResponse.headers.raw()['set-cookie'][0]
+  // console.log('cookie',authCookie.split(';')[0])
+  console.log('cookie',authCookie.split(';')[0])
 
-  // const response = await fetch('http://localhost:8080/transfer/test/status', {
+  // const response = await fetch('http://localhost:8080/kyc/personalDataAndDocuments', {
   //   headers: {
   //     'cookie': authCookie.split(';')[0] // strip out additional fields like Path, Expires
-  //   }
+  //   },
+  //   method: 'POST',
+  //   body: JSON.stringify(
+  //     {
+
+  //       "lastName": "Bob",
+  //       "firstName": "Alice",
+  //       "middleName": "Foo",
+  //       "dateOfBirth": {
+  //         "day": "12",
+  //         "year": "1994",
+  //         "month": "4"
+  //       },
+  //       "address": {
+  //         "city": "Lagos",
+  //         "address1": "No 15",
+  //         "address2": "string",
+  //         "postalCode": "100001",
+  //         "isoRegionCode": "KD",
+  //         "isoCountryCode": "NG"
+  //       },
+  //       "phoneNumber": "07037205555",
+  //       "selfieDocument": "abc",
+  //       "identificationDocument": "def"
+      
+  //   })
   // })
   // const data = await response.json()
   // console.log(data)

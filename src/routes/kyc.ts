@@ -46,6 +46,8 @@ export function kycRouter({
         >,
         _res: express.Response,
       ) => {
+        const kycOwner = req.session.siwe?.address
+
         // Delegate to type-specific handlers after validation provides type guards
         const formattedSchema = validateSchema<
           KycSchemas[typeof req.params.kycSchema]
@@ -55,17 +57,18 @@ export function kycRouter({
           // Load Repository
           const repository = dataSource.getRepository(KYC)
           const entity = new KYC()
-
+          entity.kycRequired = true
           entity.address = formattedSchema?.address
           entity.dateOfBirth = formattedSchema?.dateOfBirth
           entity.firstName = formattedSchema?.firstName
+          entity.owner = kycOwner != null ? kycOwner : ''
           entity.lastName = formattedSchema?.lastName
           entity.middleName = formattedSchema?.middleName
           entity.phoneNumber = formattedSchema?.phoneNumber
           entity.selfieDocument = formattedSchema?.selfieDocument
           entity.identificationDocument =
             formattedSchema?.identificationDocument
-          entity.kycSchemaName = KycSchema.PersonalDataAndDocuments
+          entity.kycSchemaName = req.params.kycSchema
           entity.status = KycStatus.KycPending
 
           await repository.save(entity)
@@ -83,26 +86,25 @@ export function kycRouter({
     '/:kycSchema/status',
     kycSchemaRequestParamsValidator,
     asyncRoute(
-      async (
-        _req: express.Request<KycRequestParams>,
-        _res: express.Response,
-      ) => {
+      async (req: express.Request<KycRequestParams>, res: express.Response) => {
+        const kycOwner = req.session.siwe?.address
+
         try {
-          const formattedSchema = validateSchema<
-            KycSchemas[typeof _req.params.kycSchema]
-          >(_req.body, `${_req.params.kycSchema}KycSchema`)
+          validateSchema<KycSchemas[typeof req.params.kycSchema]>(
+            req.body,
+            `${req.params.kycSchema}KycSchema`,
+          )
           // Load Repository
           const repository = dataSource.getRepository(KYC)
 
           const result = await repository.findOneBy({
-            firstName: formattedSchema.firstName,
-            lastName: formattedSchema.lastName,
-            dateOfBirth: formattedSchema.dateOfBirth,
+            owner: kycOwner,
+            kycSchemaName: req.params.kycSchema,
           })
 
-          return _res.send({ status: result?.status })
+          return res.send({ status: result?.status })
         } catch (error) {
-          return _res
+          return res
             .status(404)
             .send({ error: FiatConnectError.ResourceNotFound })
         }
@@ -114,26 +116,26 @@ export function kycRouter({
     '/:kycSchema',
     kycSchemaRequestParamsValidator,
     asyncRoute(
-      async (
-        _req: express.Request<KycRequestParams>,
-        _res: express.Response,
-      ) => {
-        const formattedSchema = validateSchema<
-          KycSchemas[typeof _req.params.kycSchema]
-        >(_req.body, `${_req.params.kycSchema}KycSchema`)
+      async (req: express.Request<KycRequestParams>, res: express.Response) => {
+        validateSchema<KycSchemas[typeof req.params.kycSchema]>(
+          req.body,
+          `${req.params.kycSchema}KycSchema`,
+        )
+        const kycOwner = req.session.siwe?.address
+
         try {
           // Load Repository
           const repository = dataSource.getRepository(KYC)
 
           const toRemove = await repository.findOneBy({
-            firstName: formattedSchema.firstName,
-            lastName: formattedSchema.lastName,
-            dateOfBirth: formattedSchema.dateOfBirth,
+            owner: kycOwner,
+            kycSchemaName: req.params.kycSchema,
           })
 
           await repository.remove(toRemove)
+          return res.status(200).send({})
         } catch (error) {
-          return _res
+          return res
             .status(404)
             .send({ error: FiatConnectError.ResourceNotFound })
         }

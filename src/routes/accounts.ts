@@ -3,8 +3,6 @@ import { asyncRoute } from './async-route'
 import { validateSchema } from '../schema/'
 import {
   DeleteFiatAccountRequestParams,
-  FiatAccountSchemas,
-  NotImplementedError,
   PostFiatAccountRequestBody,
   SupportedFiatAccountSchemas,
 } from '../types'
@@ -13,6 +11,7 @@ import { Account } from '../entity/account.entity'
 import {
   AccountNumber,
   DuniaWallet,
+  FiatAccountSchemas,
   FiatConnectError,
   MobileMoney,
 } from '@fiatconnect/fiatconnect-types'
@@ -78,13 +77,39 @@ export function accountsRouter({
 
         // Validate data in body for exact fiat account schema type. The body middleware
         // doesn't ensure exact match of fiatAccountSchema and data
-        const validatedData = validateSchema<
-          FiatAccountSchemas[typeof req.body.fiatAccountSchema]
-        >(req.body.data, `${req.body.fiatAccountSchema}Schema`)
+        validateSchema<FiatAccountSchemas[typeof req.body.fiatAccountSchema]>(
+          req.body.data,
+          `${req.body.fiatAccountSchema}Schema`,
+        )
+
         const entity = new Account()
-        entity.institutionName = validatedData.institutionName
-        entity.accountName = validatedData?.accountName
+        entity.institutionName = req.body.data.institutionName
+        entity.accountName = req.body.data?.accountName
         entity.owner = userAddress
+        entity.fiatAccountType = req.body.data?.fiatAccountType
+        entity.fiatAccountSchema = req.body.fiatAccountSchema
+
+        // todo: Refactor Typechecking to use type guards
+        let formatedType
+        switch (req.body.fiatAccountSchema) {
+          case 'AccountNumber':
+            formatedType = req.body.data as AccountNumber
+            entity.accountNumber = formatedType.accountNumber
+            entity.country = formatedType?.country
+            break
+          case 'DuniaWallet':
+            formatedType = req.body.data as DuniaWallet
+            entity.mobile = formatedType?.mobile
+
+            break
+          case 'MobileMoney':
+            formatedType = req.body.data as MobileMoney
+            entity.mobile = formatedType?.mobile
+            entity.operator = formatedType?.operator
+            entity.country = formatedType?.country
+            break
+        }
+
         /// TODO: Generate entity based on validatedData type
 
         try {
@@ -147,6 +172,7 @@ export function accountsRouter({
           })
 
           await repository.remove(toRemove)
+          return _res.status(200).send({})
         } catch (error) {
           return _res
             .status(404)

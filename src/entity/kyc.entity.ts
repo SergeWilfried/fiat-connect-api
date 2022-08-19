@@ -24,6 +24,9 @@ export class KYC {
   })
   status?: KycStatus
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  owner?: string
+
   @Column({ type: 'varchar', length: 255 })
   firstName: string
   @Column({ type: 'varchar', length: 255 })

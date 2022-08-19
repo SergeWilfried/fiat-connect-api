@@ -3,8 +3,8 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity()
 export class Transfer {
-  @PrimaryGeneratedColumn()
-  id: number
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
   @Column({ name: 'fiatAccountId', type: 'numeric' })
   fiatAccountId: number

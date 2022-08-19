@@ -8,10 +8,6 @@ import {
   UnauthorizedError,
 } from '../types'
 
-
-
-
-
 dotenv.config()
 
 /// TODO: get api key from configuration
@@ -33,7 +29,7 @@ function verifyClientKeyMiddleware(
 ) {
   // could be something like `
   if (_req.headers.authorization !== `Bearer ${EXPECTED_API_KEY}`)
-    throw new UnauthorizedError()
+    throw new Error('Missing api key')
   _next()
 }
 

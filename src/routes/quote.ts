@@ -28,9 +28,6 @@ const MAX_CRYPTO_AMOUNT = 10
 
 const USD_XOF_RATE = 650
 
-
-
-
 export function quoteRouter({
   clientAuthMiddleware,
   client,
@@ -103,10 +100,10 @@ export function quoteRouter({
                 tokenPrice = res.data.data.CUSD.quote.USD.price
               })
               .catch((err) => err)
-            // Estimate fiat amount
+          // Estimate fiat amount
           const fiatAmount =
             Number(_req.body.cryptoAmount) * Number(tokenPrice) * USD_XOF_RATE
-                        // Estimate crypto amount
+          // Estimate crypto amount
 
           const cryptoAmount = Number(_req.body.fiatAmount) / USD_XOF_RATE
           // Set quote validity
@@ -157,7 +154,7 @@ export function quoteRouter({
               },
             })
 
-            // Save quote in database
+          // Save quote in database
           const quoteOut = await dataSource.getRepository(Quote).create(quote)
           await dataSource.getRepository(Quote).save(quoteOut)
 
@@ -402,7 +399,6 @@ function isValidAmount(body: QuoteRequestBody) {
     }
   }
 }
-
 
 function isSupportedGeo(
   country: string,

@@ -9,24 +9,30 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity()
 export class Account {
-  @PrimaryGeneratedColumn()
-  id: number
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
   @Column({
     name: 'operator',
     type: 'enum',
     enum: SupportedOperatorEnum,
+    nullable: true,
   })
   operator?: SupportedOperatorEnum
   @Column({ name: 'institutionName', type: 'varchar', length: 255 })
   institutionName: string
   @Column({ name: 'accountName', type: 'varchar', length: 255 })
   accountName: string
-  @Column({ name: 'mobile', type: 'varchar', length: 255 })
+  @Column({ name: 'mobile', type: 'varchar', length: 255, nullable: true })
   mobile?: string
   @Column({ name: 'country', type: 'varchar', length: 255 })
   country: string
-  @Column({ name: 'accountNumber', type: 'varchar', length: 255 })
+  @Column({
+    name: 'accountNumber',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   accountNumber?: string
   @Column({
     name: 'fiatAccountType',
