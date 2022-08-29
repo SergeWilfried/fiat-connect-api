@@ -10,7 +10,7 @@
       "build": "tsc",
       "format": "prettier --loglevel error --write \"./src/**/*.ts\"",
       "lint": "eslint --ext=.tsx,.ts --fix src/",
-      "start": "ts-node src/index.ts --auth-config-option mainnet --session-secret poiii",
+      "start": "ts-node src/index.ts --auth-config-option AUTH_CONFIG_OPTION --session-secret poiii",
       "dev": "./scripts/dev.sh",
       "test": "jest",
       "dev:server": "NODE_ENV=development nodemon --watch './**/*.ts' --exec 'ts-node' --files ./src/index.ts --auth-config-option alfajores --session-secret poiii",
